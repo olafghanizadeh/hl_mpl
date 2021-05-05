@@ -1,0 +1,20 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+{{ trans 'Results' }}
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <div class="card-body">
+        Your payoff was chosen from <strong>Choice {{ index_to_pay }}</strong> where you picked option <strong>{{
+            player.option_chosen_letter }}</strong>. The computer made a random choice and your total score is
+        <strong>{{ player.payoff }}</strong>.
+    </div>
+</div>
+
+
+
+{% endblock %}
