@@ -52,13 +52,6 @@ class Group(BaseGroup):
 
 class Player(BasePlayer):
     """The oTree class that generates the info PER PLAYER"""
-
-    def test_function(self):
-
-        return self.session.vars['num_choices']
-
-
-
     # Initiate fields to be populated by app
     choice_to_pay = models.StringField()
     option_chosen = models.IntegerField()
@@ -80,9 +73,7 @@ class Player(BasePlayer):
 def creating_session(subsession: Subsession):
     """Method to initiate a session"""
     # Set Constant num.choices to n for easier reuse
-    print(subsession.session.config['num_choices'])
-    global n
-    n = subsession.session.config['num_choices']
+    n = Constants.num_choices
     # Multiplier to test for incentive effects
     multiplier = subsession.session.config['multiplier']
     # Multiply payoffs by session.config.multiplier
@@ -100,7 +91,6 @@ def creating_session(subsession: Subsession):
     formatted_p = ["{0:.0f}".format(p * 100) + "%" for p in probs]
     formatted_inverse_p = ["{0:.0f}".format(p * 100) + "%" for p in inverse_p]
     form_fields = ['choice_' + str(k) for k in index]
-    print(form_fields)
     choices = list(zip(index, form_fields, formatted_p, formatted_inverse_p))
     subsession.session.vars['choices'] = choices
     # Create lottery for each player
@@ -117,7 +107,7 @@ def set_payoffs(player: Player):
     # Call the payoff dictionary, which contains updated values with multiplier
     payoffs = player.session.vars['payoffs']
     # Call the number of choices to create the probability distribution to draw from
-    n = player.session.config['num_choices']
+    n = Constants.num_choices
     # get the choice that was randomly drawn in 'creating_session'
     player.choice_to_pay = player.participant.vars['choice_to_pay']
     print(player.choice_to_pay)
