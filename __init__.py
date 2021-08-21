@@ -35,7 +35,7 @@ def make_field():
 class Constants(BaseConstants):
     name_in_url = 'risk_lottery'
     players_per_group = None
-    num_rounds = 1
+    num_rounds = 2
     num_choices = 10
     # Defining Lottery Payoffs in a dict
     payoffs = {"A": [20, 16], "B": [38, 1]}
@@ -52,6 +52,7 @@ class Group(BaseGroup):
 
 class Player(BasePlayer):
     """The oTree class that generates the info PER PLAYER"""
+    treatment = models.StringField()
     # Initiate fields to be populated by app
     choice_to_pay = models.StringField()
     option_chosen = models.IntegerField()
@@ -72,6 +73,10 @@ class Player(BasePlayer):
 # FUNCTIONS
 def creating_session(subsession: Subsession):
     """Method to initiate a session"""
+    for player in subsession.get_players():
+        player.treatment = random.choice(["A", "B", "C", "D"])
+        print('player assigned treatment:', player.treatment)
+
     # Set Constant num.choices to n for easier reuse
     n = Constants.num_choices
     # Multiplier to test for incentive effects
