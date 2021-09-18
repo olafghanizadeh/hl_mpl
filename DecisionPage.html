@@ -1,11 +1,27 @@
 {% extends "global/Page.html" %}
 {% load staticfiles otree %}
 
+
+
 {% block title %}
 Make your choices on this page
 {% endblock %}
 
 {% block content %}
+
+{%  if test %}
+<h1>This round is test</h1>
+{% endif %}
+{%  if hypo %}
+<h1>The payoff is hypothetical</h1>
+{% endif %}
+{%  if treatment %}
+<h1>The current treatment is {{treatment}}</h1>
+{% endif %}
+
+Player treatmment: {{test}} <br>
+Current Round: {{subsession.round_number}}
+
 
 {% for index,form_field,p,inverse_p in choices %}
     <div class="my-5">
@@ -15,7 +31,7 @@ Make your choices on this page
                 <div class="card h-100">
                     <h4 class="card-header">Option A</h4>
                     <div class="card-body">
-                        <p>{{lottery_a_hi}} with {{ p }} chance or {{lottery_a_lo}} with {{ inverse_p }} chance</p>
+                        <p>{{lottery_a_hi}} lottery tickets with a probability of {{ p }} or {{lottery_a_lo}} lottery tickets with a probability of {{ inverse_p }}</p>
                         <div class="form_field d-flex justify-content-center">
                             <input type="radio" name="{{ form_field }}" value="0" required>
                         </div>
@@ -26,7 +42,7 @@ Make your choices on this page
                 <div class="card h-100">
                     <h4 class="card-header">Option B</h4>
                     <div class="card-body">
-                        <p>{{lottery_b_hi}} with {{ p }} chance or {{lottery_b_lo}} with {{ inverse_p }} chance</p>
+                        <p>{{lottery_b_hi}} lottery tickets with a probability of {{ p }} or {{lottery_b_lo}} lottery tickets with a probability of {{ inverse_p }}</p>
                         <div class="form_field d-flex justify-content-center">
                             <input type="radio" name="{{ form_field }}" value="1" required>
                         </div>
