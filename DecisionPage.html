@@ -9,18 +9,6 @@ Make your choices on this page
 
 {% block content %}
 
-{%  if test %}
-<h1>This round is test</h1>
-{% endif %}
-{%  if hypo %}
-<h1>The payoff is hypothetical</h1>
-{% endif %}
-{%  if treatment %}
-<h1>The current treatment is {{treatment}}</h1>
-{% endif %}
-
-Player treatmment: {{test}} <br>
-Current Round: {{subsession.round_number}}
 
 
 {% for index,form_field,p,inverse_p in choices %}

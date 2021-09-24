@@ -1,6 +1,7 @@
 import random
 import numpy as np
 from otree.api import *
+import math
 from gettext import gettext
 
 # Moved index function to separate file to keep this file cleaner
@@ -133,11 +134,13 @@ def creating_session(subsession: Subsession):
     # Store in session variables
     subsession.session.vars['index'] = index
     probs = [i / n for i in index]
+    print(probs)
     inverse_p = [1 - p for p in probs]
+    print(inverse_p)
     subsession.session.vars['probs'] = probs
     subsession.session.vars['inverse_probs'] = inverse_p
     formatted_p = [f"{int(p * 100)}%" for p in probs]
-    formatted_inverse_p = [f"{int(p * 100)}%" for p in inverse_p]
+    formatted_inverse_p = [f"{int(math.ceil(p * 100))}%" for p in inverse_p]
     form_fields = ['choice_' + str(k) for k in index]
     choices = list(zip(index, form_fields, formatted_p, formatted_inverse_p))
     subsession.session.vars['choices'] = choices
@@ -240,7 +243,8 @@ class ResultsPage(Page):
     @staticmethod
     def before_next_page(player: Player, timeout_happened):
         if (Constants.treatments[player.participant.treatment][player.round_number][
-            'test']) or Constants.treatments[player.participant.treatment][player.round_number]['hypothetical']:
+                'test'] == True) or Constants.treatments[player.participant.treatment][player.round_number][
+            'hypothetical'] == True:
             setattr(player, 'payoff', 0)
 
 
