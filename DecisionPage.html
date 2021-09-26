@@ -1,46 +1,65 @@
 {% extends "global/Page.html" %}
 {% load staticfiles otree %}
 
-
-
 {% block title %}
-Make your choices on this page
+{{ trans 'Make your choices' }}
 {% endblock %}
 
 {% block content %}
-
-
+{% if hypo %}
+<div class="alert alert-warning" role="alert">
+    <h3>{{ trans 'Hypothetical winnings'}}</h3>
+    {{ trans 'This round involves hypothetical rewards, meaning that the results of this round will not count towards your final score' }}.
+</div>
+{% endif %}
 
 {% for index,form_field,p,inverse_p in choices %}
-    <div class="my-5">
-        <h3>Choice {{ index }}</h3>
-        <div class="row row-cols-1 row-cols-md-2 g-4">
-            <div class="col">
-                <div class="card h-100">
-                    <h4 class="card-header">Option A</h4>
-                    <div class="card-body">
-                        <p>{{lottery_a_hi}} lottery tickets with a probability of {{ p }} or {{lottery_a_lo}} lottery tickets with a probability of {{ inverse_p }}</p>
-                        <div class="form_field d-flex justify-content-center">
-                            <input type="radio" name="{{ form_field }}" value="0" required>
-                        </div>
+<div class="my-5">
+    <h3>{{ trans 'Choice'}} {{ index }}</h3>
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        <div class="col">
+            <div class="card h-100">
+                <h4 class="card-header">{{ trans 'Option'}} A</h4>
+                <div class="card-body">
+                    <p>
+                        {{if lang == 'en'}}
+                        {{lottery_a_hi}} with a probability of {{ p }} or {{lottery_a_lo}} with a probability of {{ inverse_p }}
+                        {{endif}}
+                        {{if lang == 'pt'}}
+                        {{lottery_a_hi}} com probabilidade de {{ p }} ou {{lottery_a_lo}} com probabilidade de {{ inverse_p }}
+                        {{endif}}
+                    </p>
+                    <div class="form_field d-flex justify-content-center">
+                        <input type="radio" name="{{ form_field }}" value="0" required>
                     </div>
                 </div>
             </div>
-            <div class="col">
-                <div class="card h-100">
-                    <h4 class="card-header">Option B</h4>
-                    <div class="card-body">
-                        <p>{{lottery_b_hi}} lottery tickets with a probability of {{ p }} or {{lottery_b_lo}} lottery tickets with a probability of {{ inverse_p }}</p>
-                        <div class="form_field d-flex justify-content-center">
-                            <input type="radio" name="{{ form_field }}" value="1" required>
-                        </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <h4 class="card-header">{{ trans 'Option'}} B</h4>
+                <div class="card-body">
+                    <p>
+                        {{if lang == 'en'}}
+                        {{lottery_b_hi}} lottery tickets with a probability of {{ p }} or {{lottery_b_lo}} lottery
+                        tickets with a probability of {{ inverse_p }}
+                        {{endif}}
+                        {{if lang == 'pt'}}
+                        {{lottery_b_hi}} de loteria com probabilidade de {{ p }} ou {{lottery_b_lo}} de loteria com probabilidade de {{ inverse_p }}
+                        {{endif}}
+                    </p>
+                    <div class="form_field d-flex justify-content-center">
+                        <input type="radio" name="{{ form_field }}" value="1" required>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    {% endfor %}
+</div>
+{% endfor %}
+<div class="d-grid gap-2 d-md-flex justify-content-end mt-4">
 
-{% next_button %}
+    {% next_button %}
+</div>
 
 {% endblock %}

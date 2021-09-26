@@ -2,21 +2,64 @@
 {% load otree static %}
 
 {% block title %}
-{{ trans 'Results' }}
+{{ trans 'Round results' }}
 {% endblock %}
 
 {% block content %}
 
 <div class="card">
+    <div class="card-header">
+        <h3>{{ trans 'Round results' }}</h3>
+    </div>
     <div class="card-body">
-        Your payoff was chosen from <strong>Choice {{ index_to_pay }}</strong> where you picked option <strong>{{
-            player.option_chosen_letter }}</strong>. The computer made a random choice and your total score is
+        {{if lang == 'en'}}
+        Your winning ticket was chosen from <strong>Choice {{ index_to_pay }}</strong> where you picked option <strong>{{
+            player.option_chosen_letter }}</strong>. The computer made a random draw and your score from this round was
         <strong>{{ player.payoff }}</strong>.
+
+        {{ if player.round_number == 1}}
+        <p>In the following rounds, the possible gains may be very large, or small and the difference of potential winnings between participants may be large due to the random nature of the lotteries.</p>
+        <p>We understand that some participants may wish to not continue, therefore, from now on you will always have the option to withdraw between the rounds and leave what you have earned up until that point, you will still be part of the final lottery</p>
+        <p><strong>If you wish to continue from this round to the next, you must give up the lottery tickets earned in the previous round. Keep in mind that the following rounds may include the possibility of higher winnings.</strong></p>
+        <p>However, we guarantee that you will not lose any tickets in the following rounds.</p>
+        {{endif}}
+
+        {{ if player.round_number != 1}}
+        <br>
+        <p>Remember that you can withdraw and leave with your current winnings.</p>
+        {{endif}}
+
+        {{endif}}
+        {{if lang == 'pt'}}
+        Your payoff was chosen from <strong>Choice {{ index_to_pay }}</strong> where you picked option <strong>{{
+            player.option_chosen_letter }}</strong>. The computer made a random draw and your score from this round was
+        <strong>{{ player.payoff }}</strong>.
+
+        {{ if player.round_number == 1}}
+        <p>In the following rounds, the possible gains may be very large, or small and the differences between participants may be large due to the random nature of the lotteries.</p>
+        <p>We understand that some participants may wish to not continue, therefore, from now on you will always have the option to withdraw between the rounds and leave what you have earned up until that point, you will still be part of the final lottery</p>
+        <p><strong>If you wish to continue from this round to the next, you must give up the lottery tickets earned in the previous round in order to get the chance to participate in the following rounds that may include higher winnings.</strong></p>
+        <p>However, we guarantee that you will not lose any tickets in the following rounds.</p>
+        {{endif}}
+
+        {{ if player.round_number != 1}}
+        <br>
+        <p>Remember that you can withdraw and leave with your current winnings.</p>
+        {{endif}}
+
+        {{endif}}
+
     </div>
 </div>
 
-
+<div class="d-grid gap-2 d-md-flex justify-content-between mt-4">
+    <p>
+<button class="btn btn-danger" name="withdraw" value="True">{{ trans 'Withdraw'}}</button>
+    </p>
 {% next_button %}
+
+</div>
+
 
 
 

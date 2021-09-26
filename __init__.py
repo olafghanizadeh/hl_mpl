@@ -1,8 +1,9 @@
 import random
 import numpy as np
 from otree.api import *
-import math
 from gettext import gettext
+from settings import LANGUAGE_CODE
+
 
 # Moved index function to separate file to keep this file cleaner
 
@@ -17,15 +18,6 @@ def create_index(choices):
     index = [j for j in range(1, choices + 1)]
     return index
 
-
-def make_fields(n):
-    choice_list = []
-    for i in range(1, n + 1):
-        locals()['choice_' + str(i)] = models.IntegerField(
-            choices=[0, 1], widget=widgets.RadioSelectHorizontal)
-    return choice_list
-
-
 def make_field():
     return models.IntegerField(
         choices=[0, 1],
@@ -33,47 +25,112 @@ def make_field():
         widget=widgets.RadioSelect,
     )
 
-
 class Constants(BaseConstants):
     name_in_url = 'risk_lottery'
     players_per_group = None
-    num_rounds = 3
+    num_rounds = 4
     num_choices = 10
     # Defining Lottery Payoffs in a dict
     payoffs = {"A": [20, 16], "B": [38, 1]}
     index = create_index(num_choices)
     treatments = {
-        'lo':
+        '20Hyp':
             {
                 1: {
                     'multiplier': 1,
                     'hypothetical': False,
-                    'test': True
+                    'test': False
                 },
                 2: {
-                    'multiplier': 1,
-                    'hypothetical': False,
+                    'multiplier': 20,
+                    'hypothetical': True,
                     'test': False
                 },
                 3: {
-                    'multiplier': 20,
+                    'multiplier': 1,
                     'hypothetical': False,
                     'test': False
                 }
             },
-        'hi': {
+        '20Real': {
             1: {
-                'multiplier': 1,
-                'hypothetical': False,
-                'test': True
-            },
-            2: {
                 'multiplier': 1,
                 'hypothetical': False,
                 'test': False
             },
+            2: {
+                'multiplier': 20,
+                'hypothetical': False,
+                'test': False
+            },
+            3: {
+                'multiplier': 1,
+                'hypothetical': False,
+                'test': False
+            }
+        },
+        '20HypReal': {
+            1: {
+                'multiplier': 1,
+                'hypothetical': False,
+                'test': False
+            },
+            2: {
+                'multiplier': 20,
+                'hypothetical': True,
+                'test': False
+            },
+            3: {
+                'multiplier': 20,
+                'hypothetical': False,
+                'test': False
+            },
+            4: {
+                'multiplier': 1,
+                'hypothetical': False,
+                'test': False
+            }
+        },
+        '50HypReal': {
+            1: {
+                'multiplier': 1,
+                'hypothetical': False,
+                'test': False
+            },
+            2: {
+                'multiplier': 50,
+                'hypothetical': True,
+                'test': False
+            },
+            3: {
+                'multiplier': 50,
+                'hypothetical': False,
+                'test': False
+            },
+            4: {
+                'multiplier': 1,
+                'hypothetical': False,
+                'test': False
+            }
+        },
+        '90HypReal': {
+            1: {
+                'multiplier': 1,
+                'hypothetical': False,
+                'test': False
+            },
+            2: {
+                'multiplier': 90,
+                'hypothetical': True,
+                'test': False
+            },
             3: {
                 'multiplier': 90,
+                'hypothetical': False,
+                'test': False
+            },
+            4: {
+                'multiplier': 1,
                 'hypothetical': False,
                 'test': False
             }
@@ -88,6 +145,7 @@ class Player(BasePlayer):
     option_chosen = models.IntegerField()
     option_chosen_letter = models.StringField()
     treatment = models.StringField()
+    withdraw = models.BooleanField(initial=False, blank=True)
     # Function to set payoffs for each player
 
     n = len(index)
@@ -99,6 +157,15 @@ class Player(BasePlayer):
     # Delete intermediate variables
     del j
     del n
+
+
+def custom_export(players):
+    # header row
+    yield ['session', 'treatment', 'participant ID', 'round_number', 'payoff']
+    for p in players:
+        participant = p.participant
+        session = p.session
+        yield [session.code, participant.treatment, participant.code, p.round_number, p.payoff]
 
 
 class Subsession(BaseSubsession):
@@ -116,15 +183,13 @@ def creating_session(subsession: Subsession):
         for player in subsession.get_players():
             participant = player.participant
             participant.treatment = random.choice(list(Constants.treatments))
-            print('player assigned treatment:', participant.treatment)
+            print(participant.treatment)
 
     # Set Constant num.choices to n for easier reuse
     n = Constants.num_choices
 
     # Multiplier to test for incentive effects
     for player in subsession.get_players():
-        multiplier = Constants.treatments[player.participant.treatment][subsession.round_number]['multiplier']
-        print('multiplier: ' + str(multiplier))
         participant = player.participant
         participant.payoffs = {
             key: [i for i in value]
@@ -134,13 +199,11 @@ def creating_session(subsession: Subsession):
     # Store in session variables
     subsession.session.vars['index'] = index
     probs = [i / n for i in index]
-    print(probs)
     inverse_p = [1 - p for p in probs]
-    print(inverse_p)
     subsession.session.vars['probs'] = probs
     subsession.session.vars['inverse_probs'] = inverse_p
-    formatted_p = [f"{int(p * 100)}%" for p in probs]
-    formatted_inverse_p = [f"{int(math.ceil(p * 100))}%" for p in inverse_p]
+    formatted_p = ["{:.0%}".format(p) for p in probs]
+    formatted_inverse_p = ["{:.0%}".format(p) for p in inverse_p]
     form_fields = ['choice_' + str(k) for k in index]
     choices = list(zip(index, form_fields, formatted_p, formatted_inverse_p))
     subsession.session.vars['choices'] = choices
@@ -159,8 +222,7 @@ def set_payoffs(player: Player):
     payoffs = player.participant.payoffs
     # get the choice that was randomly drawn in 'creating_session'
     player.choice_to_pay = player.participant.vars['choice_to_pay']
-    print(player.choice_to_pay)
-    print(player.participant.vars['index_to_pay'])
+
 
     # Check which option the user selected in the Choice that was selected by app
     player.option_chosen = getattr(player, player.choice_to_pay)
@@ -210,18 +272,19 @@ class DecisionPage(Page):
         multiplier = Constants.treatments[player.participant.treatment][player.round_number]['multiplier']
         return {
             "choices": player.session.vars['choices'],
-            'lottery_a_hi': player.participant.payoffs['A'][0] *
-                            multiplier,
-            'lottery_a_lo': player.participant.payoffs['A'][1] *
-                            multiplier,
-            'lottery_b_hi': player.participant.payoffs['B'][0] *
-                            multiplier,
-            'lottery_b_lo': player.participant.payoffs['B'][1] *
-                            multiplier,
+            'lottery_a_hi': cu(player.participant.payoffs['A'][0] *
+                            multiplier),
+            'lottery_a_lo': cu(player.participant.payoffs['A'][1] *
+                            multiplier),
+            'lottery_b_hi': cu(player.participant.payoffs['B'][0] *
+                            multiplier),
+            'lottery_b_lo': cu(player.participant.payoffs['B'][1] *
+                            multiplier),
             'num_choices': Constants.num_choices,
             'test': Constants.treatments[player.participant.treatment][player.round_number]['test'],
             'hypo': Constants.treatments[player.participant.treatment][player.round_number]['hypothetical'],
-            'treatment': next(iter(Constants.treatments[player.participant.treatment]))
+            'treatment': next(iter(Constants.treatments[player.participant.treatment])),
+            'lang': LANGUAGE_CODE
         }
 
     # Triggers the function that set draws the payoff of the user before the user is taken to the result page. This
@@ -233,19 +296,34 @@ class DecisionPage(Page):
 
 # Class for the ResultsPage. Inherits attributes from Page Class
 class ResultsPage(Page):
+    form_model = 'player'
+    form_fields = ['withdraw']
+
     # Expose variables that will only be available on this page.
     @staticmethod
     def vars_for_template(player: Player):
         return {
             "index_to_pay": player.participant.vars['index_to_pay'],
+            'withdraw': player.withdraw,
+            'lang': LANGUAGE_CODE,
+            'hypo': Constants.treatments[player.participant.treatment][player.round_number]['hypothetical']
         }
 
     @staticmethod
     def before_next_page(player: Player, timeout_happened):
         if (Constants.treatments[player.participant.treatment][player.round_number][
                 'test'] == True) or Constants.treatments[player.participant.treatment][player.round_number][
-            'hypothetical'] == True:
+            'hypothetical'] == True or (player.withdraw == False and player.round_number == 1):
             setattr(player, 'payoff', 0)
+
+    @staticmethod
+    def app_after_this_page(player, upcoming_apps):
+        if player.withdraw:
+            return "payment_info"
+        elif len(Constants.treatments[player.participant.treatment]) == 3 and player.round_number == 3:
+            return 'payment_info'
+        else:
+            return ''
 
 
 # The sequence the app will order the pages.
