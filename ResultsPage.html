@@ -14,14 +14,19 @@
     <div class="card-body">
         {{if lang == 'en'}}
         Your winning ticket was chosen from <strong>Choice {{ index_to_pay }}</strong> where you picked option <strong>{{
-            player.option_chosen_letter }}</strong>. The computer made a random draw and your score from this round was
+        player.option_chosen_letter }}</strong>. The computer made a random draw and your score from this round was
         <strong>{{ player.payoff }}</strong>.
 
         {{ if player.round_number == 1}}
-        <p>In the following rounds, the possible gains may be very large, or small and the difference of potential winnings between participants may be large due to the random nature of the lotteries.</p>
-        <p>We understand that some participants may wish to not continue, therefore, from now on you will always have the option to withdraw between the rounds and leave what you have earned up until that point, you will still be part of the final lottery</p>
-        <p><strong>If you wish to continue from this round to the next, you must give up the lottery tickets earned in the previous round. Keep in mind that the following rounds may include the possibility of higher winnings.</strong></p>
-        <p>However, we guarantee that you will not lose any tickets in the following rounds.</p>
+        <p>In the following rounds, the possible gains may be very large, or small and the difference of potential
+            winnings between participants may be large due to the random nature of the lotteries.</p>
+        <p>We understand that some participants may wish to not continue, therefore, from now on you will always have
+            the option to withdraw between the rounds and leave what you have earned up until that point, you will still
+            be part of the final lottery</p>
+        <p><strong>If you wish to continue from this round to the next, you must give up the lottery tickets earned in
+            the previous round. Keep in mind that the following rounds may include the possibility of higher
+            winnings.</strong></p>
+        <p>However, we guarantee that you will not end up with zero tickets at the end of the experiment.</p>
         {{endif}}
 
         {{ if player.round_number != 1}}
@@ -31,20 +36,26 @@
 
         {{endif}}
         {{if lang == 'pt'}}
-        Your payoff was chosen from <strong>Choice {{ index_to_pay }}</strong> where you picked option <strong>{{
-            player.option_chosen_letter }}</strong>. The computer made a random draw and your score from this round was
+        Seu bilhete premiado foi escolhido de <strong>Choice {{ index_to_pay }}</strong> em que você escolheu a opção
+        <strong>{{
+            player.option_chosen_letter }}</strong>. O computador fez um sorteio e a sua pontuação para essa rodada foi
         <strong>{{ player.payoff }}</strong>.
 
         {{ if player.round_number == 1}}
-        <p>In the following rounds, the possible gains may be very large, or small and the differences between participants may be large due to the random nature of the lotteries.</p>
-        <p>We understand that some participants may wish to not continue, therefore, from now on you will always have the option to withdraw between the rounds and leave what you have earned up until that point, you will still be part of the final lottery</p>
-        <p><strong>If you wish to continue from this round to the next, you must give up the lottery tickets earned in the previous round in order to get the chance to participate in the following rounds that may include higher winnings.</strong></p>
-        <p>However, we guarantee that you will not lose any tickets in the following rounds.</p>
+        <p>Nas próximas rodadas, a possibilidade de ganho poderá ser muito alta ou ou pequena, e a diferença de
+            potencial de ganho entre os participantes poderá ser grande em razão da natureza randómica das lotarias.</p>
+        <p>Entendemos que alguns participantes podem não querer continuar. Portanto, deste ponto em diante, você terá
+            sempre a opção de abster-se de continuar entre as rodadas e sair com o que foi ganho até este ponto. Mesmo
+            assim você será parte do sorteio final.</p>
+        <p><strong>Se desejar continuar desta rodada para a próxima, você deve desistir dos bilhetes de lotaria ganhos
+            na rodada anterior. Tenha em mente que as próximas rodadas podem incluir a possibilidade de ganhos mais
+            altos</strong></p>
+        <p>Entretanto, garantimos que não é possível terminar o experimento sem nenhum bilhete. </p>
         {{endif}}
 
         {{ if player.round_number != 1}}
         <br>
-        <p>Remember that you can withdraw and leave with your current winnings.</p>
+        <p>Lembre-se que pode retirar-se e sair com os seus ganhos atuais.</p>
         {{endif}}
 
         {{endif}}
@@ -54,13 +65,11 @@
 
 <div class="d-grid gap-2 d-md-flex justify-content-between mt-4">
     <p>
-<button class="btn btn-danger" name="withdraw" value="True">{{ trans 'Withdraw'}}</button>
+        <button class="btn btn-danger" name="withdraw" value="True">{{ trans 'Withdraw'}}</button>
     </p>
-{% next_button %}
+    {% next_button %}
 
 </div>
-
-
 
 
 {% endblock %}
