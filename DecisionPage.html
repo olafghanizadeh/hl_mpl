@@ -23,10 +23,10 @@
                 <div class="card-body">
                     <p>
                         {{if lang == 'en'}}
-                        {{lottery_a_hi}} with a probability of {{ p }} or {{lottery_a_lo}} with a probability of {{ inverse_p }}
+                        {{ p }} probability of winning {{lottery_a_hi}} and {{ inverse_p }} of winning {{lottery_a_lo}}
                         {{endif}}
                         {{if lang == 'pt'}}
-                        {{lottery_a_hi}} com probabilidade de {{ p }} ou {{lottery_a_lo}} com probabilidade de {{ inverse_p }}
+                        {{ p }} probabilidade de ganhar {{lottery_a_hi }} e {{ inverse_p }} probabilidade de ganhar {{lottery_a_lo}}
                         {{endif}}
                     </p>
                     <div class="form_field d-flex justify-content-center">
@@ -41,11 +41,10 @@
                 <div class="card-body">
                     <p>
                         {{if lang == 'en'}}
-                        {{lottery_b_hi}} lottery tickets with a probability of {{ p }} or {{lottery_b_lo}} lottery
-                        tickets with a probability of {{ inverse_p }}
+                        {{ p }} probability of winning {{lottery_b_hi}} or {{ inverse_p }} of winning {{lottery_b_lo}}
                         {{endif}}
                         {{if lang == 'pt'}}
-                        {{lottery_b_hi}} de loteria com probabilidade de {{ p }} ou {{lottery_b_lo}} de loteria com probabilidade de {{ inverse_p }}
+                        {{ p }} probabilidade de ganhar {{lottery_b_hi }} e {{ inverse_p }} probabilidade de ganhar {{lottery_b_lo}}
                         {{endif}}
                     </p>
                     <div class="form_field d-flex justify-content-center">
