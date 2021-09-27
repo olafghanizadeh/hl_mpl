@@ -1,11 +1,28 @@
 {% extends "global/Page.html" %}
 {% load staticfiles otree %}
+{% block app_scripts %}
+<script src="{% static 'cardSelector.js' %}"></script>
+{% endblock %}
 
 {% block title %}
 {{ trans 'Make your choices' }}
+
 {% endblock %}
 
 {% block content %}
+
+<style>
+    .card {
+        cursor: pointer;
+
+    }
+
+    input[type="radio"] {
+        visibility: hidden;
+    }
+</style>
+
+
 {% if hypo %}
 <div class="alert alert-warning" role="alert">
     <h3>{{ trans 'Hypothetical winnings'}}</h3>
@@ -26,7 +43,7 @@
                         {{ p }} probability of winning {{lottery_a_hi}} and {{ inverse_p }} of winning {{lottery_a_lo}}
                         {{endif}}
                         {{if lang == 'pt'}}
-                        {{ p }} probabilidade de ganhar {{lottery_a_hi }} e {{ inverse_p }} probabilidade de ganhar {{lottery_a_lo}}
+                        {{ p }} de probabilidade de ganhar {{lottery_a_hi }} e {{ inverse_p }} de probabilidade de ganhar {{lottery_a_lo}}
                         {{endif}}
                     </p>
                     <div class="form_field d-flex justify-content-center">
@@ -41,10 +58,10 @@
                 <div class="card-body">
                     <p>
                         {{if lang == 'en'}}
-                        {{ p }} probability of winning {{lottery_b_hi}} or {{ inverse_p }} of winning {{lottery_b_lo}}
+                        {{ p }} probability of winning {{lottery_b_hi}} and {{ inverse_p }} of winning {{lottery_b_lo}}
                         {{endif}}
                         {{if lang == 'pt'}}
-                        {{ p }} probabilidade de ganhar {{lottery_b_hi }} e {{ inverse_p }} probabilidade de ganhar {{lottery_b_lo}}
+                        {{ p }} de probabilidade de ganhar {{lottery_b_hi }} e {{ inverse_p }} de probabilidade de ganhar {{lottery_b_lo}}
                         {{endif}}
                     </p>
                     <div class="form_field d-flex justify-content-center">
@@ -56,9 +73,10 @@
     </div>
 </div>
 {% endfor %}
-<div class="d-grid gap-2 d-md-flex justify-content-end mt-4">
-
-    {% next_button %}
+<div class="d-grid gap-2 mt-4">
+    <button class="btn btn-primary">
+        {{ trans 'Continue'}}
+    </button>
 </div>
 
 {% endblock %}
