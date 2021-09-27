@@ -319,9 +319,9 @@ class ResultsPage(Page):
     @staticmethod
     def app_after_this_page(player, upcoming_apps):
         if player.withdraw:
-            return "payment_info"
+            return "survey"
         elif len(Constants.treatments[player.participant.treatment]) == 3 and player.round_number == 3:
-            return 'payment_info'
+            return 'survey'
         else:
             return ''
 
