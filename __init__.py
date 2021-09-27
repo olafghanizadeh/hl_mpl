@@ -142,6 +142,7 @@ class Player(BasePlayer):
     """The oTree class that generates the info PER PLAYER"""
     # Initiate fields to be populated by app
     choice_to_pay = models.StringField()
+    index_to_pay = models.IntegerField()
     option_chosen = models.IntegerField()
     option_chosen_letter = models.StringField()
     treatment = models.StringField()
@@ -161,11 +162,11 @@ class Player(BasePlayer):
 
 def custom_export(players):
     # header row
-    yield ['session', 'treatment', 'participant ID', 'round_number', 'payoff']
+    yield ['session.code', 'participant.treatment', 'participant.code']
     for p in players:
         participant = p.participant
         session = p.session
-        yield [session.code, participant.treatment, participant.code, p.round_number, p.payoff]
+        yield [session.code, participant.treatment, participant.code]
 
 
 class Subsession(BaseSubsession):
@@ -183,7 +184,6 @@ def creating_session(subsession: Subsession):
         for player in subsession.get_players():
             participant = player.participant
             participant.treatment = random.choice(list(Constants.treatments))
-            print(participant.treatment)
 
     # Set Constant num.choices to n for easier reuse
     n = Constants.num_choices
@@ -210,10 +210,9 @@ def creating_session(subsession: Subsession):
     # Create lottery for each player
     for p in subsession.get_players():
         # Randomly pick which choice to pay at the end of lottery, and assign to a participant variable
-        p.participant.vars['index_to_pay'] = random.randrange(1, len(index))
-        # NEEDS COMMENT
-        p.participant.vars['choice_to_pay'] = 'choice_' + str(
-            p.participant.vars['index_to_pay'])
+        p.index_to_pay = random.randrange(1, len(index))
+        p.choice_to_pay = 'choice_' + str(p.index_to_pay)
+
 
 
 def set_payoffs(player: Player):
@@ -221,13 +220,13 @@ def set_payoffs(player: Player):
     # Call the payoff dictionary, which contains updated values with multiplier
     payoffs = player.participant.payoffs
     # get the choice that was randomly drawn in 'creating_session'
-    player.choice_to_pay = player.participant.vars['choice_to_pay']
+    #player.choice_to_pay = player.participant.vars['choice_to_pay']
 
 
     # Check which option the user selected in the Choice that was selected by app
     player.option_chosen = getattr(player, player.choice_to_pay)
     # Get the index of the Choice that was drawn to create the corresponding probability
-    index = player.participant.vars['index_to_pay']
+    index = player.index_to_pay
     # Create lists of probability and inverse probability, this could be improved with better code
     i = player.session.vars['probs'][index - 1]
     j = player.session.vars['inverse_probs'][index - 1]
@@ -303,7 +302,7 @@ class ResultsPage(Page):
     @staticmethod
     def vars_for_template(player: Player):
         return {
-            "index_to_pay": player.participant.vars['index_to_pay'],
+            "index_to_pay": player.index_to_pay,
             'withdraw': player.withdraw,
             'lang': LANGUAGE_CODE,
             'hypo': Constants.treatments[player.participant.treatment][player.round_number]['hypothetical']

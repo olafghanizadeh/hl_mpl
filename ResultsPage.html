@@ -43,6 +43,16 @@
             player.option_chosen_letter }}</strong>. O computador fez um sorteio entre os dois prémios possíveis desta
         Opção e seleccionou o seu prémio para esta ronda:
         <strong>{{ player.payoff }}</strong> de lotaria.
+        {{if hypo}}
+        <strong>
+            {{if lang == 'pt'}}
+            Como esta ronda foi hipotética, estes bilhetes não será atribuidos no seu pontuação final.
+            {{endif}}
+            {{if lang == 'en'}}
+            As this round involved hypothetical winnings, these lottery tickets will not be counted towards your final score.
+            {{endif}}
+        </strong>
+        {{endif}}
 
         {{ if player.round_number == 1}}
         <p>Tem agora a possibilidade de terminar ou continuar. Se optar por terminar, fica com os bilhetes de lotaria
@@ -58,6 +68,7 @@
         {{endif}}
 
         {{ if player.round_number != 1}}
+        <br>
         <br>
         <p>Lembre-se que pode retirar-se e sair com os seus ganhos atuais.</p>
         {{endif}}
