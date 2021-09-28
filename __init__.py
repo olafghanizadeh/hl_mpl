@@ -4,7 +4,6 @@ from otree.api import *
 from gettext import gettext
 from settings import LANGUAGE_CODE
 
-
 # Moved index function to separate file to keep this file cleaner
 
 author = 'Olaf Ghanizadeh'
@@ -18,12 +17,14 @@ def create_index(choices):
     index = [j for j in range(1, choices + 1)]
     return index
 
+
 def make_field():
     return models.IntegerField(
         choices=[0, 1],
         label="label",
         widget=widgets.RadioSelect,
     )
+
 
 class Constants(BaseConstants):
     name_in_url = 'risk_lottery'
@@ -207,21 +208,22 @@ def creating_session(subsession: Subsession):
     form_fields = ['choice_' + str(k) for k in index]
     choices = list(zip(index, form_fields, formatted_p, formatted_inverse_p))
     subsession.session.vars['choices'] = choices
-    # Create lottery for each player
-    for p in subsession.get_players():
-        # Randomly pick which choice to pay at the end of lottery, and assign to a participant variable
-        p.index_to_pay = random.randrange(1, len(index))
-        p.choice_to_pay = 'choice_' + str(p.index_to_pay)
-
 
 
 def set_payoffs(player: Player):
     """When 'set_payoffs' is called, the player's payoff is set"""
     # Call the payoff dictionary, which contains updated values with multiplier
+    # Create lottery for each player
+    # for p in player.subsession.get_players():
+    # Randomly pick which choice to pay at the end of lottery, and assign to a participant variable
+    # p.index_to_pay = random.randrange(1, len(Constants.index))
+    # p.choice_to_pay = 'choice_' + str(p.index_to_pay)
+
+    player.index_to_pay = random.randrange(1, len(Constants.index))
+    player.choice_to_pay = 'choice_' + str(player.index_to_pay)
     payoffs = player.participant.payoffs
     # get the choice that was randomly drawn in 'creating_session'
-    #player.choice_to_pay = player.participant.vars['choice_to_pay']
-
+    # player.choice_to_pay = player.participant.vars['choice_to_pay']
 
     # Check which option the user selected in the Choice that was selected by app
     player.option_chosen = getattr(player, player.choice_to_pay)
@@ -272,13 +274,13 @@ class DecisionPage(Page):
         return {
             "choices": player.session.vars['choices'],
             'lottery_a_hi': cu(player.participant.payoffs['A'][0] *
-                            multiplier),
+                               multiplier),
             'lottery_a_lo': cu(player.participant.payoffs['A'][1] *
-                            multiplier),
+                               multiplier),
             'lottery_b_hi': cu(player.participant.payoffs['B'][0] *
-                            multiplier),
+                               multiplier),
             'lottery_b_lo': cu(player.participant.payoffs['B'][1] *
-                            multiplier),
+                               multiplier),
             'num_choices': Constants.num_choices,
             'test': Constants.treatments[player.participant.treatment][player.round_number]['test'],
             'hypo': Constants.treatments[player.participant.treatment][player.round_number]['hypothetical'],
@@ -310,7 +312,10 @@ class ResultsPage(Page):
 
     @staticmethod
     def before_next_page(player: Player, timeout_happened):
-        if (Constants.treatments[player.participant.treatment][player.round_number][
+        if player.withdraw == True and Constants.treatments[player.participant.treatment][player.round_number] == 2 and Constants.treatments[player.participant.treatment][player.round_number][
+            'hypothetical'] == True:
+            setattr(player, 'payoff', 1)
+        elif (Constants.treatments[player.participant.treatment][player.round_number][
                 'test'] == True) or Constants.treatments[player.participant.treatment][player.round_number][
             'hypothetical'] == True or (player.withdraw == False and player.round_number == 1):
             setattr(player, 'payoff', 0)
@@ -318,7 +323,7 @@ class ResultsPage(Page):
     @staticmethod
     def app_after_this_page(player, upcoming_apps):
         if player.withdraw:
-            return "survey"
+            return 'survey'
         elif len(Constants.treatments[player.participant.treatment]) == 3 and player.round_number == 3:
             return 'survey'
         else:
