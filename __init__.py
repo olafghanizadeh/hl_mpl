@@ -203,8 +203,8 @@ def creating_session(subsession: Subsession):
     inverse_p = [1 - p for p in probs]
     subsession.session.vars['probs'] = probs
     subsession.session.vars['inverse_probs'] = inverse_p
-    formatted_p = ["{:.0%}".format(p) for p in probs]
-    formatted_inverse_p = ["{:.0%}".format(p) for p in inverse_p]
+    formatted_p = [round(p,1) for p in probs]
+    formatted_inverse_p = [round(p,1) for p in inverse_p]
     form_fields = ['choice_' + str(k) for k in index]
     choices = list(zip(index, form_fields, formatted_p, formatted_inverse_p))
     subsession.session.vars['choices'] = choices
