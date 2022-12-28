@@ -30,7 +30,7 @@ class Constants(BaseConstants):
     name_in_url = 'risk_lottery'
     players_per_group = None
     num_rounds = 4
-    num_choices = 10
+    num_choices = 11
     # Defining Lottery Payoffs in a dict
     payoffs = {"A": [20, 16], "B": [38, 1]}
     index = create_index(num_choices)
@@ -199,7 +199,7 @@ def creating_session(subsession: Subsession):
 
     # Store in session variables
     subsession.session.vars['index'] = index
-    probs = [i / n for i in index]
+    probs = [1 if i == 1 or i == 11 else i/(n-1) for i in index]
     inverse_p = [1 - p for p in probs]
     subsession.session.vars['probs'] = probs
     subsession.session.vars['inverse_probs'] = inverse_p
