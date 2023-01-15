@@ -22,13 +22,7 @@
     }
 </style>
 
-
-{% if hypo %}
-<div class="alert alert-warning" role="alert">
-    <h3>{{ trans 'Hypothetical winnings'}}</h3>
-    {{ trans 'This round involves hypothetical rewards, meaning that the results of this round will not count towards your final score' }}.
-</div>
-{% endif %}
+You are {{player.role}}
 
 {% for index,form_field,p,inverse_p in choices %}
 <div class="my-5">
@@ -37,37 +31,41 @@
         <div class="col">
             <div class="card h-100">
                 <h4 class="card-header">{{ trans 'Option'}} A</h4>
-                <div class="card-body">
-                    <p>
-                        {{if lang == 'en'}}
-                        {{ p }} probability of winning {{lottery_a_hi}} and {{ inverse_p }} of winning {{lottery_a_lo}}
-                        {{endif}}
-                        {{if lang == 'pt'}}
-                        {{ p }} de probabilidade de ganhar {{lottery_a_hi }} e {{ inverse_p }} de probabilidade de ganhar {{lottery_a_lo}}
-                        {{endif}}
-                    </p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <p>{{player.role}}</p>
+                        <p>{{payoffs.A.low |cu}} with a probability of {{p}}</p>
+                       <p> {{payoffs.A.high |cu}} with a probability of {{inverse_p}}</p>
+                    </li>
+                    <li class="list-group-item">
+                        <p>{{partner}}</p>
+                        <p>{{partner_payoffs.A.low |cu}} with a probability of {{p}}</p>
+                        <p> {{partner_payoffs.A.high |cu}} with a probability of {{inverse_p}}</p>
+                    </li>
                     <div class="form_field d-flex justify-content-center">
                         <input type="radio" name="{{ form_field }}" value="0" required>
                     </div>
-                </div>
+                </ul>
             </div>
         </div>
         <div class="col">
             <div class="card h-100">
                 <h4 class="card-header">{{ trans 'Option'}} B</h4>
-                <div class="card-body">
-                    <p>
-                        {{if lang == 'en'}}
-                        {{ p }} probability of winning {{lottery_b_hi}} and {{ inverse_p }} of winning {{lottery_b_lo}}
-                        {{endif}}
-                        {{if lang == 'pt'}}
-                        {{ p }} de probabilidade de ganhar {{lottery_b_hi }} e {{ inverse_p }} de probabilidade de ganhar {{lottery_b_lo}}
-                        {{endif}}
-                    </p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <p>{{player.role}}</p>
+                        <p>{{payoffs.B.low |cu}} with a probability of {{p}}</p>
+                        <p> {{payoffs.B.high |cu}} with a probability of {{inverse_p}}</p>
+                    </li>
+                    <li class="list-group-item">
+                        <p>{{partner}}</p>
+                        <p>{{partner_payoffs.B.low |cu}} with a probability of {{p}}</p>
+                        <p> {{partner_payoffs.B.high |cu}} with a probability of {{inverse_p}}</p>
+                    </li>
                     <div class="form_field d-flex justify-content-center">
                         <input type="radio" name="{{ form_field }}" value="1" required>
                     </div>
-                </div>
+                </ul>
             </div>
         </div>
     </div>

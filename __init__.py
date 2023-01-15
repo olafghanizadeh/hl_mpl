@@ -1,7 +1,6 @@
 import random
 import numpy as np
 from otree.api import *
-from gettext import gettext
 from settings import LANGUAGE_CODE
 
 # Moved index function to separate file to keep this file cleaner
@@ -18,123 +17,58 @@ def create_index(choices):
     return index
 
 
-def make_field():
+def make_field(name):
     return models.IntegerField(
         choices=[0, 1],
-        label="label",
+        label=name,
         widget=widgets.RadioSelect,
     )
 
 
+def draw_prize(payoffs, p, player, letter):
+    drawn = np.random.choice(payoffs, 1, p)
+    player.option_chosen_letter = letter
+
+    player.participant.drawn[player.round_number] = {letter:drawn[0]}
+
+
+def subtract(v, i):
+    if i == 1:
+        return v
+    return v - (5 * (i - 1))
+
+
+def create_payoffs():
+    return {
+        i: {
+            k: ({
+                    inner_k: ({
+                                  nested_k: (subtract(nested_v, i) if nested_k == 'low' else nested_v) for
+                                  nested_k, nested_v in inner_v.items()
+                              } if inner_k == 'B' else inner_v) for inner_k, inner_v in v.items()
+                } if k == Constants.DECISION_MAKER_ROLE else v) for k, v in Constants.payoffs.items()} for i in
+        range(1, Constants.num_rounds + 1)
+    }
+
+
 class Constants(BaseConstants):
     name_in_url = 'risk_lottery'
-    players_per_group = None
+    BASELINE = 'BASELINE'
+    ALIGNED = 'ALIGNED'
+    RECEIVER_ROLE = 'Receiver'
+    DECISION_MAKER_ROLE = 'Decision Maker'
+    players_per_group = 2
     num_rounds = 4
     num_choices = 11
-    # Defining Lottery Payoffs in a dict
-    payoffs = {"A": [20, 16], "B": [38, 1]}
     index = create_index(num_choices)
-    treatments = {
-        '20Hyp':
-            {
-                1: {
-                    'multiplier': 1,
-                    'hypothetical': False,
-                    'test': False
-                },
-                2: {
-                    'multiplier': 20,
-                    'hypothetical': True,
-                    'test': False
-                },
-                3: {
-                    'multiplier': 1,
-                    'hypothetical': False,
-                    'test': False
-                }
-            },
-        '20Real': {
-            1: {
-                'multiplier': 1,
-                'hypothetical': False,
-                'test': False
-            },
-            2: {
-                'multiplier': 20,
-                'hypothetical': False,
-                'test': False
-            },
-            3: {
-                'multiplier': 1,
-                'hypothetical': False,
-                'test': False
-            }
+    payoffs = {
+        RECEIVER_ROLE: {
+            'A': {'high': 20, 'low': 16},
+            'B': {'high': 40, 'low': 1}
         },
-        '20HypReal': {
-            1: {
-                'multiplier': 1,
-                'hypothetical': False,
-                'test': False
-            },
-            2: {
-                'multiplier': 20,
-                'hypothetical': True,
-                'test': False
-            },
-            3: {
-                'multiplier': 20,
-                'hypothetical': False,
-                'test': False
-            },
-            4: {
-                'multiplier': 1,
-                'hypothetical': False,
-                'test': False
-            }
-        },
-        '50HypReal': {
-            1: {
-                'multiplier': 1,
-                'hypothetical': False,
-                'test': False
-            },
-            2: {
-                'multiplier': 50,
-                'hypothetical': True,
-                'test': False
-            },
-            3: {
-                'multiplier': 50,
-                'hypothetical': False,
-                'test': False
-            },
-            4: {
-                'multiplier': 1,
-                'hypothetical': False,
-                'test': False
-            }
-        },
-        '90HypReal': {
-            1: {
-                'multiplier': 1,
-                'hypothetical': False,
-                'test': False
-            },
-            2: {
-                'multiplier': 90,
-                'hypothetical': True,
-                'test': False
-            },
-            3: {
-                'multiplier': 90,
-                'hypothetical': False,
-                'test': False
-            },
-            4: {
-                'multiplier': 1,
-                'hypothetical': False,
-                'test': False
-            }
+        DECISION_MAKER_ROLE: {
+            'A': {'high': 20, 'low': 16},
+            'B': {'high': 40, 'low': 16}
         }
     }
 
@@ -146,8 +80,6 @@ class Player(BasePlayer):
     index_to_pay = models.IntegerField()
     option_chosen = models.IntegerField()
     option_chosen_letter = models.StringField()
-    treatment = models.StringField()
-    withdraw = models.BooleanField(initial=False, blank=True)
     # Function to set payoffs for each player
 
     n = len(index)
@@ -155,7 +87,7 @@ class Player(BasePlayer):
     # Generates the fields for the form fields. Necessary to call locals() to access correct scope. This should be
     # put in a function to improve code quality.
     for j in range(1, n + 1):
-        locals()['choice_' + str(j)] = make_field()
+        locals()[f'choice_{str(j)}'] = make_field(f'choice_{str(j)}')
     # Delete intermediate variables
     del j
     del n
@@ -180,31 +112,23 @@ class Group(BaseGroup):
 
 # FUNCTIONS
 def creating_session(subsession: Subsession):
+    subsession.group_randomly(fixed_id_in_group=True)
     """Method to initiate a session"""
-    if subsession.round_number == 1:
-        for player in subsession.get_players():
-            participant = player.participant
-            participant.treatment = random.choice(list(Constants.treatments))
 
     # Set Constant num.choices to n for easier reuse
     n = Constants.num_choices
 
-    # Multiplier to test for incentive effects
-    for player in subsession.get_players():
-        participant = player.participant
-        participant.payoffs = {
-            key: [i for i in value]
-            for (key, value) in Constants.payoffs.items()
-        }
+    subsession.session.vars['payoffs'] = create_payoffs()
 
     # Store in session variables
     subsession.session.vars['index'] = index
-    probs = [1 if i == 1 or i == 11 else i/(n-1) for i in index]
+    probs = [i / (n - 1) for i in index]
+    probs.insert(0, 0)
     inverse_p = [1 - p for p in probs]
     subsession.session.vars['probs'] = probs
     subsession.session.vars['inverse_probs'] = inverse_p
-    formatted_p = [round(p,1) for p in probs]
-    formatted_inverse_p = [round(p,1) for p in inverse_p]
+    formatted_p = [f'{p:.1f}' for p in probs]
+    formatted_inverse_p = [round(p, 1) for p in inverse_p]
     form_fields = ['choice_' + str(k) for k in index]
     choices = list(zip(index, form_fields, formatted_p, formatted_inverse_p))
     subsession.session.vars['choices'] = choices
@@ -221,7 +145,7 @@ def set_payoffs(player: Player):
 
     player.index_to_pay = random.randrange(1, len(Constants.index))
     player.choice_to_pay = 'choice_' + str(player.index_to_pay)
-    payoffs = player.participant.payoffs
+    payoffs = player.subsession.session.vars['payoffs']
     # get the choice that was randomly drawn in 'creating_session'
     # player.choice_to_pay = player.participant.vars['choice_to_pay']
 
@@ -238,22 +162,18 @@ def set_payoffs(player: Player):
     del i
     del j
     # Assign the outcomes to lists
-    a = [payoffs['A'][0], payoffs['A'][1]]
-    b = [payoffs['B'][0], payoffs['B'][1]]
-    # If the player chose 'A'
-    if player.option_chosen == 0:
-        # Numpy function that picks an element in a list according to probability distribution, first argument is
-        # the list to pick from, second argument is the number of times to run the draw, third argument is list
-        # of probabilities
-        drawn = np.random.choice(a, 1, p)
-        # Run the draw once, numpy creates a list with 1 element, and we access it by getting the 0-index.
-        player.payoff = drawn[0] * Constants.treatments[player.participant.treatment][player.round_number]['multiplier']
-        player.option_chosen_letter = 'A'
-    # If the player chose 'B'
-    elif player.option_chosen == 1:
-        drawn = np.random.choice(b, 1, p)
-        player.payoff = drawn[0] * Constants.treatments[player.participant.treatment][player.round_number]['multiplier']
-        player.option_chosen_letter = 'B'
+    if player.role == Constants.DECISION_MAKER_ROLE:
+
+        a = [key for key in payoffs[player.round_number][player.role]['A'].keys()]
+        b = [key for key in payoffs[player.round_number][player.role]['B'].keys()]
+        if 'drawn' not in player.participant.vars:
+            player.participant.vars['drawn'] = {}
+        # If the player chose 'A'
+        if player.option_chosen == 0:
+            draw_prize(a, p, player, 'A')
+        elif player.option_chosen == 1:
+            draw_prize(b, p, player, 'B')
+
 
 
 # Class for the DecisionPage. Inherits attributes from Page Class
@@ -270,22 +190,16 @@ class DecisionPage(Page):
     # Expose variables that will only be available on this page.
     @staticmethod
     def vars_for_template(player: Player):
-        multiplier = Constants.treatments[player.participant.treatment][player.round_number]['multiplier']
+        partner = player.get_others_in_group()
+        role = partner[0].role
+
         return {
             "choices": player.session.vars['choices'],
-            'lottery_a_hi': cu(player.participant.payoffs['A'][0] *
-                               multiplier),
-            'lottery_a_lo': cu(player.participant.payoffs['A'][1] *
-                               multiplier),
-            'lottery_b_hi': cu(player.participant.payoffs['B'][0] *
-                               multiplier),
-            'lottery_b_lo': cu(player.participant.payoffs['B'][1] *
-                               multiplier),
             'num_choices': Constants.num_choices,
-            'test': Constants.treatments[player.participant.treatment][player.round_number]['test'],
-            'hypo': Constants.treatments[player.participant.treatment][player.round_number]['hypothetical'],
-            'treatment': next(iter(Constants.treatments[player.participant.treatment])),
-            'lang': LANGUAGE_CODE
+            'lang': LANGUAGE_CODE,
+            'partner': role,
+            'payoffs': player.session.vars['payoffs'][player.round_number][player.role],
+            'partner_payoffs': player.session.vars['payoffs'][player.round_number][role]
         }
 
     # Triggers the function that set draws the payoff of the user before the user is taken to the result page. This
@@ -305,30 +219,17 @@ class ResultsPage(Page):
     def vars_for_template(player: Player):
         return {
             "index_to_pay": player.index_to_pay,
-            'withdraw': player.withdraw,
             'lang': LANGUAGE_CODE,
-            'hypo': Constants.treatments[player.participant.treatment][player.round_number]['hypothetical']
         }
 
     @staticmethod
     def before_next_page(player: Player, timeout_happened):
-        if player.withdraw == True and Constants.treatments[player.participant.treatment][player.round_number] == 2 and Constants.treatments[player.participant.treatment][player.round_number][
-            'hypothetical'] == True:
-            setattr(player, 'payoff', 1)
-        elif (Constants.treatments[player.participant.treatment][player.round_number][
-                'test'] == True) or Constants.treatments[player.participant.treatment][player.round_number][
-            'hypothetical'] == True or (player.withdraw == False and player.round_number == 1):
-            setattr(player, 'payoff', 0)
+        pass
 
     @staticmethod
     def app_after_this_page(player, upcoming_apps):
-        if player.withdraw:
-            return 'survey'
-        elif len(Constants.treatments[player.participant.treatment]) == 3 and player.round_number == 3:
-            return 'survey'
-        else:
-            return ''
+        pass
 
 
 # The sequence the app will order the pages.
-page_sequence = [DecisionPage, ResultsPage]
+page_sequence = [DecisionPage]
